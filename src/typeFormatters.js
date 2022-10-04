@@ -55,16 +55,20 @@ const inlineExtraFormatters = {
     };
   },
   [SCHEMA_TYPES.ENUM]: (parsedSchema) => {
+    let content = parsedSchema.$ref
+      ? parsedSchema.typeName
+      : _.uniq(
+        _.compact([
+          ..._.map(parsedSchema.content, ({ value }) => `${value}`),
+          parsedSchema.nullable && TS_KEYWORDS.NULL,
+        ]),
+      ).join(" | ")
+    if (parsedSchema.schema?.type === 'array') {
+      content = '(' + content + ')[]'
+    }
     return {
       ...parsedSchema,
-      content: parsedSchema.$ref
-        ? parsedSchema.typeName
-        : _.uniq(
-            _.compact([
-              ..._.map(parsedSchema.content, ({ value }) => `${value}`),
-              parsedSchema.nullable && TS_KEYWORDS.NULL,
-            ]),
-          ).join(" | "),
+      content,
     };
   },
 };
